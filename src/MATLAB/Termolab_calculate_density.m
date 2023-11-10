@@ -25,11 +25,10 @@ end
 [G_dP,Nphs,~]  = tl_gibbs_energy(T2d(:),P2d(:)+delP,phases);% get Gibbs energy at P+dP for derivatives
 
 %% Save Thermolab calculation
-save([runname '_Thermolab_linprog']);
+save(sprintf("%s_isothermal_%.2fK_Thermolab_linprog.mat", runname, Tprofile));
 %% Load Thermolab calculation
 clc, clear
-runname = 'antigorite';
-load([runname '_Thermolab_linprog']);
+load("antigorite_isothermal_923.15K_Thermolab_linprog.mat");
 %% Postprocessing
 molm     = molmass_fun(X);                                                        % get molar mass of the components
 Nphases  = Nphs([14,12,1,8],:);

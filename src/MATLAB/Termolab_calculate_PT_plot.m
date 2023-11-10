@@ -1,3 +1,4 @@
+% Ca
 clear,clf,addpath("C:\Users\mlmtb\OneDrive - Università di Pavia\Work\Works in progress\Lisa_Eberhard\Thermolab_v_22_03_23")
 % Example phase diagrams Fig 4
 T = linspace(400,850,100) + 273.15;
@@ -23,7 +24,7 @@ tl_psection(T-273.15,P/1e9,X,assemblage_id,phases);
 xlabel('T (\circC)'),ylabel('P(GPa)')
 set(gca,'FontSize',12)
 
-%% Save calculation
-runname = 'antigorite'
-save([runname '_linprog'])
+% Save calculation
+% runname = 'antigorite';
+% save(sprintf("%s_PT_Thermolab_linprog.mat", runname, Tprofile));
 
