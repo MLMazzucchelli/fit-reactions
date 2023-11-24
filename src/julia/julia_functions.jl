@@ -1,4 +1,5 @@
-# Density of solid, density of fluid and weigth fraction of the non-volatile components as a function of pressure
+# Use the fitting functions to geet the density of solid, density of fluid and weigth fraction of the non-volatile components
+# as a function of the scaled pressure.
 
 using DelimitedFiles
 using GLMakie

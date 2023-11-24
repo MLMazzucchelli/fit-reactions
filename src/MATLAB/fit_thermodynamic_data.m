@@ -5,6 +5,11 @@
 % rho of water [kg/m3], total weigth fraction of the non-volatile components [].
 %
 % Export the parameters of the 3 fittings as a text file.
+% Params(1:8): fitting of density of solid
+% Params(9:11): fitting of density of fluid
+% Params(12:15); fitting of mass fraction of solid component.
+% Params(16): Pressure of the transition [Pa] on which the pressure is
+% rescaled.
 % Important: the fitting functions give the solid, fluid and the mass fraction of the non-volatile
 % component, respectively, as a function of the SCALED pressure.
 
@@ -21,15 +26,18 @@ data_for_fitting    = data.constantTdata(constantTdata.P>=Pfitting(1) & constant
 data_for_fitting    = data_for_fitting(1:1:end,:);
 Rho_s_LU            = data_for_fitting.rhos;                     % Precalculated solid density as function of pressure
 Rho_f_LU            = data_for_fitting.rhow;                     % Precalculated water density as function of water pressure
-X_LU                = data_for_fitting.nonVolatile_wt./100;     % Precalculated mass fraction of MgO as function of fluid pressure
+X_LU                = data_for_fitting.nonVolatile_wt./100;      % Precalculated mass fraction of MgO as function of fluid pressure
 P_LU                = data_for_fitting.P;                        % Corresponding fluid pressure array [kbar]; 
 
+%Convert P units from kbar to Pa
+P_LU               = P_LU*1e8;
+Pfitting           = Pfitting*1e8;
 %Find the pressure of reaction as the discontinuity in solid density
 [value,idx]         = max(abs(diff(Rho_s_LU)));
-Preaction           = P_LU(idx);                               % Pressure of reaction [kbar]
+Preaction           = P_LU(idx);                               % Pressure of reaction [Pa]
 
 % Scale pressure units
-P_ini               = 1;                                       % Initial ambient pressure [kbar]
+P_ini               = 1;                                       % Initial ambient pressure [Pa]
 Pini_Pappl          = P_ini/Preaction;
 P_LU_scaled         = P_LU*Pini_Pappl;                         % Rescale the look-up table P to the P of transition
 Preaction_scaled    = Preaction*Pini_Pappl;
@@ -78,16 +86,18 @@ Rparams  = nlinfit(P_LU_scaled,X_LU,X_func,[1]);
 X_param  = [Rparams(1) Preaction_scaled x_dif_ana x_min_ana];
 X_ana    = X_func(Rparams,P_LU_scaled);  %X_ana [] as a function of the SCALED pressure
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Rescale back to physical P
+P_ana      = P_LU_scaled/Pini_Pappl; %scale P back to physical value in Pa
 
-% Rescale back P
-P_ana      = P_LU_scaled/Pini_Pappl; %scale P back to physical value in kbar
-
-% Save fitting parameters
-T = table;
-T.rhos_params = Rho_s_param;
-T.rhof_params = Rho_f_param;
-T.X_params    = X_param;
-writetable(T, 'fitting_parameters.txt')
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Save fitting parameters and the P of transition
+Tab = table;
+Tab.rhos_params     = Rho_s_param;
+Tab.rhof_params     = Rho_f_param;
+Tab.X_params        = X_param;
+Tab.Preaction_Pa    = Preaction; 
+writetable(Tab, 'fitting_parameters.txt')
 
 
 % Plotting
@@ -98,7 +108,7 @@ plot(P_ana, Rho_s_LU, 'o','DisplayName','Thermodynamic data')
 plot(P_ana, Rho_s_ana,'-r','DisplayName','Analytical fit')
 %plot(P_ana, Rho_s_ana(end)+100*erfc(5000*(P_ana-Preaction)),'-g','DisplayName','Analytical fit')
 ylabel('Density [kg/m^3]')
-xlabel('Pressure [kbar]')
+xlabel('Pressure [Pa]')
 title('A) Solid density vs fluid pressure')
 set(gca,'ytick',[2000:250:3500])
 axis([Pfitting(1) Pfitting(2) 2400 3500])
@@ -112,7 +122,7 @@ hold on
 plot(P_ana, Rho_f_LU, 'o','DisplayName','Thermodynamic data')
 plot(P_ana, Rho_f_ana, '-r','DisplayName','Analytical fit')
 ylabel('Density [kg/m^3]')
-xlabel('Pressure [kbar]')
+xlabel('Pressure [Pa]')
 title('B) Fluid density vs fluid pressure')
 set(gca,'ytick',[250:250:1500])
 axis([Pfitting(1) Pfitting(2)  750 1500])
@@ -127,7 +137,7 @@ plot(P_ana, X_LU, 'o', 'DisplayName','Thermodynamic data')
 plot(P_ana,X_ana, '-r','DisplayName','Analytical fit (manual)')
 %plot(P_ana,X_ana_fit, '-c','DisplayName','Analytical fit')
 ylabel('X_s [ ]')
-xlabel('Pressure [kbar]')
+xlabel('Pressure [Pa]')
 title('C) Mass fraction of non-volatile component vs fluid pressure')
 axis([Pfitting(1) Pfitting(2) 0.65 1.1])
 set(gca,'ytick',[0.5:0.1:1])
